@@ -1,0 +1,66 @@
+
+bibparser
+indexer
+query parser
+user's guide
+search engine
+command line interface
+readline interface
+stress test
+regexp search
+emacs interface
+programmer's guide
+
+TODO
+profiling
+incremental loading
+off-disk engine with buckets
+off-memory engine
+near-year search
+extensive test modules
+searching per sentence
+
+
+- Monday
+09:00 Problem given
+11:00 Starter meeting
+13:30 Btparse seems wonderful
+17:20 Learned ocaml's native interface
+21:10 Done bib parser
+22:00 Done basic index
+02:30 Patricia trees are in
+       02:30 - 9:00 sleep
+
+- Tuesday
+09:00 Wake up
+14:25 Query parser
+17:00 Command line parsing and help
+21:15 File jugling                                  3010
+24:15 Search engine                                 3100
+04:15 Printing                                      3995
+06:60 Command line interface                        4115
+09:00 Readline interface                            4400
+       10:20 - 11:10 sleep
+
+- Wenesday
+11:10 Wake up
+13:30 Debugging                                     4442
+15:00 Debugging
+       15:00 - 18:00 sleep
+23:45 Debugging
+01:05 Regular expression matching
+       01:05 - 09:00 sleep
+
+- Thursday
+09:00 Wake up
+11:20 Command completion and shell-style regexp     4723
+13:00 User guide                                    4763
+14:30 Odds & ends                                   4828
+17:50 Emacs interface                               4977
+20:20 Programmer's guide and clean up               3423
+20:59 Handin
+
+- Tuesday
+19:15 Come back
+19:30 realpath without using ruby
+22:30 incremental loading

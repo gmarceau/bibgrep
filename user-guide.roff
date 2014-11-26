@@ -1,0 +1,261 @@
+.\" Local Variables:
+.\" mode: nroff
+.\" End:
+.\"
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH BIBGREP 1 "MARCH 2003"  "User Manuals"
+.SH NAME
+bibgrep \- indexed search through bibtex files
+.SH SYNOPSIS
+.B bibgrep [-all] [--index] [--interactive] [--summaries] [--sort]
+.B         [--list] [--forget] [--no-save] [--no-load] [--no-update]
+.B         [--verbose] [--help] [--morehelp] QUERY FILES... [-- QUERY]
+
+Bibgrep searches the named input BibTex files for entries matching
+a given query. Its usage is similar to the command 'grep'.
+
+Bibgrep will create an index for each BibTex file it touches, and
+save the result in 
+.BR ~/.bibgrep.idx
+(by defaults) to
+speedup future queries to the same files. Bibgrep watches the
+modification date and the size of the original BibTex file and will
+update (and delete) its index whenever needed.  Bibgrep searches
+within the BibTex files mentioned on the command line and only
+theses files, even when using an index files.
+
+The query language is an extension of the best-known query 
+language. It uses the
+.B key colon word
+convention used at google.com (everybody's favorite search engine).
+.SH OPTIONS
+.IP --morehelp
+shows this document
+.IP --all
+work with all the already indexed BibTex files 
+.IP --index
+specify an index file to use instead of the defaults
+.BR (~/.bibgrep.idx) 
+.IP --interactive
+present a prompt for interactive querying 
+.IP --summaries
+print one line summaries instead of the full BibTex entries, 
+in a format compatible with emacs' 'M-x compile' command 
+.IP --sort
+set the sorting field 
+.IP --list
+list the files indexed in the index file 
+.IP --forget
+remove the files given on the command line from the index 
+.IP --no-save
+do not save the modifications done to the index 
+.IP --no-load
+create an index anew, potentially clobbering the existing file) 
+.IP --no-update
+do not update the index, even if some BibTex files have changed 
+.IP --verbose
+comment the progress of the search (on stderr)
+.IP --
+use the rest of the command line as a query (rather
+than at its usual place) 
+ 
+.IP --no-index
+short for `--no-load --no-save' 
+.IP -i
+short for --interactive 
+.IP -sm
+short for --summaries 
+.IP -st
+short for --sort 
+.IP -l
+short for --list 
+.IP -r
+short for --forget 
+.IP -v
+short for --verbose 
+ 
+.IP -help
+display the list of options 
+.IP --help
+display the list of options
+
+.SH QUERY SYNTAX
+Enter a number of keywords and bibgrep will return entries that
+include all the search terms (automatic 'and' queries). For example,
+to search for McGill's effort in robotic soccer, query:
+
+.RS
+.B        robocup mcgill
+.RE
+
+On the command line, you would type : 
+
+.RS
+.B bibgrep 'robocup mcgill' file.bib
+.RE
+
+You can also exclude a word by adding a minus sign
+.B '-'
+in front
+of the term to avoid. For example, to search for green trees,
+rather than algorithmic ones, query:
+
+
+.RS
+.B        tree -binary -search
+.RE
+
+
+To restrict a word to a specific field, write the field name, a colon,
+then the search term (all without spaces). For example, to search for
+George Bush's contributions to Science Magazine, query:
+
+
+.RS
+.B        author:George author:Bush title:Science
+.RE
+
+
+If the field name is omitted, it defaults to the previous field name
+explicitly mentioned. The example above can be rewritten as:
+
+
+.RS
+.B        author:George :Bush title:Science
+.RE
+
+
+It is also possible to achieve the same effect using Quotes
+(although this will change if searching per sentence is ever
+implemented) :
+
+
+.RS
+.B        author:'George Bush' title:Science
+.RE
+
+
+The 'author' field can also be searched by first or last name. Search
+using field 'firstname:' and 'lastname:' respectively. 
+
+
+Disjunctions ('or' queries) are available as well. Alternatives
+should be separated with a double forward slash
+.B '//'
+, and either 
+.B '()'
+,
+.B '{}'
+or 
+.B '[]'
+can be used for grouping, as long as they match pairwise. Negation
+of disjunctions also works as expected. For example, to find
+delicious meal accompagnements, avoiding the usual suspects from
+France, query:
+
+
+.RS
+.B        (wine // champagne)  -(france // bordeaux)
+.RE
+
+
+It is possible use a exclamation mark
+.B '!'
+instead of a dash. This is a useful for queries which begin with a
+negation, otherwise they would be mistaken for a unknown option. Note
+that some shells (bash) will insist on having a space between the
+.B '!'
+and the following word.
+
+
+.RS
+.B        ! author:Knuth   ! author:Dykstra
+.RE
+
+
+Shell-style regular expressions are supported, both as search word and as
+field name.
+.B '*'
+matches a sequence of characters, and
+.B '?'
+matches a single character or nothing. They are most useful to
+abbreviate field names and to search for the singular and plural of a
+word at once. To match titles with either 'computer' or 'computers'
+(and some other unlikely things), query:
+
+
+.RS
+.B        t*:computer?
+.RE
+
+
+   Search terms are always case insensitive.
+
+.SH INTERACTIVE USAGE
+
+The
+.B --interactive
+option makes bibgrep present a prompt for
+interactive querying. This allow to make multiple search through 
+a large index without having to reload it from disk each time. The
+commands available in interactive mode are :
+
+.IP find\ <query>
+searches for BibTex entries.
+.IP add\ <file>\ ...
+add BibTex file(s) to list of files to search
+.IP remove\ <file>\ ...
+remove BibTex file(s) from files to search targets
+list the file targeted for querying
+
+.IP index\ <file>\ ...
+add file(s) to the index
+.IP forget\ <file>\ ...
+remove file(s) from the index
+.IP list
+list the indexed files
+.IP savenow
+save the index to disk now
+
+.IP help
+the this list of commands
+.IP morehelp
+shows this document
+
+.IP exit
+leave bibgrep
+.IP quit
+leave bibgrep
+.RE
+
+
+The following commands changes options :
+
+.IP  sort\ [\ off\ |\ <field>\ ]
+sets the sort key
+.IP  summaries\ [\ on\ |\ off\ ]
+toggle one-line summaries
+.IP  update\ [\ on\ |\ off\ ]
+turns off automatic synchronization of the index
+.IP  save\ [\ on\ |\ off\ ]
+disable saving the index when quitting
+.IP  verbose\ [\ on\ |\ off\ ]
+become chatty about the search process (on stderr)
+.RE
+
+
+Typing the name of an option without the argument shows its
+current status
+.SH BUGS
+This is 
+.B bibgrep
+version 0.50. It certainly has bugs or misfeatures to be
+discovered. Send them all in and all take a look.
+.SH FILES
+.I ~/.bibgrep.idx
+.RS
+The default filename for the persistant index file
+.SH AUTHOR
+Guillaume Marceau <gmarceau at cs dot brown dot edu>

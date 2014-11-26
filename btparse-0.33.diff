@@ -1,0 +1,134 @@
+Only in btparse-0.33/doc: bt_format_names.3
+Only in btparse-0.33/doc: bt_input.3
+Only in btparse-0.33/doc: bt_language.3
+Only in btparse-0.33/doc: bt_macros.3
+Only in btparse-0.33/doc: bt_misc.3
+Only in btparse-0.33/doc: bt_postprocess.3
+Only in btparse-0.33/doc: bt_split_names.3
+Only in btparse-0.33/doc: bt_traversal.3
+Only in btparse-0.33/doc: btparse.3
+Only in btparse-0.33-modif: libbtparse.a
+Only in btparse-0.33-modif: libbtparse.so
+Only in btparse-0.33-modif: output
+Only in btparse-0.33-modif/progs: Makefile
+Only in btparse-0.33-modif/progs: biblex
+Only in btparse-0.33-modif/progs: bibparse
+diff -ur btparse-0.33/progs/bibparse.c btparse-0.33-modif/progs/bibparse.c
+--- btparse-0.33/progs/bibparse.c	Sat Mar 14 11:39:16 1998
++++ btparse-0.33-modif/progs/bibparse.c	Wed Jan 15 22:10:08 2003
+@@ -263,18 +263,22 @@
+    bt_set_stringopts (BTE_PREAMBLE, options->string_opts);
+       
+    overall_status = 1;                  /* assume success */
++
++
+    while (1)
+    {
+       cur_entry = bt_parse_entry (infile, filename, 
+                                   options->other_opts,
+                                   &status);
++
+       overall_status &= status;
+-      if (!cur_entry) break;
++      if (!cur_entry && status) break;
+       if (!options->check_only)
+          print_entry (stdout, cur_entry, options->quote_strings);
+       if (options->dump_ast)
+          dump_ast ("AST for whole entry:\n", cur_entry);
+-      bt_free_ast (cur_entry);
++
++      if (cur_entry) bt_free_ast (cur_entry);
+    }
+ 
+    fclose (infile);
+Only in btparse-0.33-modif/progs: dumpnames
+Only in btparse-0.33-modif/src: bt_config.h
+Only in btparse-0.33-modif/src: btparse.h
+diff -ur btparse-0.33/src/lex_auxiliary.c btparse-0.33-modif/src/lex_auxiliary.c
+--- btparse-0.33/src/lex_auxiliary.c	Sun Nov 28 20:13:10 1999
++++ btparse-0.33-modif/src/lex_auxiliary.c	Wed Jan 15 15:39:23 2003
+@@ -310,8 +310,8 @@
+            zzchar, zzchar, zzbegexpr-zzlextext);
+ #endif
+ 
+-   notify ("lexical buffer overflowed (reallocating to %d bytes)",
+-                    zzbufsize+ZZLEXBUFSIZE);
++   /* notify ("lexical buffer overflowed (reallocating to %d bytes)",
++      zzbufsize+ZZLEXBUFSIZE); */
+    realloc_lex_buffer (ZZLEXBUFSIZE, lastpos, nextpos);
+ 
+ } /* lexer_overflow () */
+diff -ur btparse-0.33/src/macros.c btparse-0.33-modif/src/macros.c
+--- btparse-0.33/src/macros.c	Sun Nov 28 20:13:10 1999
++++ btparse-0.33-modif/src/macros.c	Wed Jan 15 22:31:02 2003
+@@ -234,10 +234,11 @@
+ #endif
+ 
+    if ((sym = zzs_get (macro)))
+-   {
++   {/*
+       macro_warning (filename, line,
+                      "overriding existing definition of macro \"%s\"", 
+                      macro);
++    */
+       delete_macro_entry (sym);
+    }
+ 
+@@ -359,7 +360,7 @@
+    sym = zzs_get (macro);
+    if (!sym)
+    {
+-      macro_warning (filename, line, "undefined macro \"%s\"", macro);
++     // macro_warning (filename, line, "undefined macro \"%s\"", macro);
+       return NULL;
+    }
+ 
+diff -ur btparse-0.33/src/string_util.c btparse-0.33-modif/src/string_util.c
+--- btparse-0.33/src/string_util.c	Thu Oct 28 18:50:28 1999
++++ btparse-0.33-modif/src/string_util.c	Wed Jan 15 12:00:16 2003
+@@ -112,7 +112,7 @@
+ {
+    char      c1, c2;
+    bt_letter dummy;
+-
++   int i;
+ 
+    /* 
+     * This is written for speed, not flexibility -- adding new foreign
+@@ -187,6 +187,8 @@
+                   { *letter = L_SSHARP_U; return TRUE; }
+                else 
+                   return FALSE;
++            default:
++               return FALSE;
+          }
+          break;
+       default:
+@@ -331,13 +333,6 @@
+       DBG_ACTION (2, printf ("  next: >%c<: ", string[src]));
+       switch (string[src])
+       {
+-         case '~':                      /* "separator" characters -- */
+-         case '-':                      /* replaced with space */
+-         case ' ':                      /* and copy an actual space */
+-            string[dst++] = ' ';
+-            src++;
+-            DBG_ACTION (2, printf ("replacing with space"));
+-            break;
+          case '{':
+             if (depth == 0 && string[src+1] == '\\')
+             {
+@@ -362,10 +357,11 @@
+                DBG_ACTION (2, printf ("alphanumeric -- copying"));
+                string[dst++] = string[src++]; /* copy it */
+             }
+-            else                        /* anything else -- skip it */
++            else                        /* anything else -- turn it into space */
+             {
+-               DBG_ACTION (2, printf ("non-separator, non-brace, non-alpha"));
++               string[dst++] = ' ';
+                src++;
++               DBG_ACTION (2, printf ("replacing with space"));
+             }
+       } /* switch string[src] */
+ 

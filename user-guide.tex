@@ -1,0 +1,228 @@
+\documentclass[11pt]{article}
+\usepackage{epsfig}
+\usepackage{fullpage}
+\title{Bibgrep - an indexing and searching \\ tool for BibTex files}
+\author{Guillaume Marceau (gmarceau@cs.brown.edu)}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{7pt}
+\linespread{1.2}
+\begin{document}
+\maketitle
+
+\section*{User manual}
+
+   Bibgrep searches the named input BibTex files for entries matching
+   a given query. Its usage is similar to the command ``grep''.
+
+
+   Bibgrep will create an index for each BibTex file it touches, and
+   save the result in {\tt $\sim$/.bibgrep.idx } (by defaults) to
+   speedup future queries to the same files. Bibgrep watches the
+   modification date and the size of the original BibTex file and will
+   update (and delete) its index whenever needed.  Bibgrep searches
+   within the BibTex files mentioned on the command line and only
+   theses files, even when using an index files.
+
+
+   The query language is an extension of the best-known query 
+   language. It uses the {\em key colon word} convention used at google.com
+   (everybody's favorite search engine).
+
+
+   Enter a number of keywords and bibgrep will return entries that
+   include all the search terms (automatic ``and'' queries). For example,
+   to search for McGill's effort in robotic soccer, query:
+
+\begin{verbatim}
+        robocup mcgill
+\end{verbatim}
+
+   On the command line, you would type : ``{\tt bibgrep 'robocup mcgill'
+   file.bib}''
+
+   You can also exclude a word by adding a minus sign (``-'') in front
+   of the term to avoid. For example, to search for green trees,
+   rather than algorithmic ones, query:
+
+
+\begin{verbatim}
+        tree -binary -search
+\end{verbatim}
+
+
+   To restrict a word to a specific field, write the field name, a colon,
+   then the search term (all without spaces). For example, to search for
+   George Bush's contributions to Science Magazine, query:
+
+
+\begin{verbatim}
+        author:George author:Bush title:Science
+\end{verbatim}
+
+
+   If the field name is omitted, it defaults to the previous field name
+   explicitly mentioned. The example above can be rewritten as:
+
+
+\begin{verbatim}
+        author:George :Bush title:Science
+\end{verbatim}
+
+
+   It is also possible to achieve the same effect using Quotes
+   (although this will change if searching per sentence is ever
+   implemented) :
+
+
+\begin{verbatim}
+        author:''George Bush'' title:Science
+\end{verbatim}
+
+
+   The ``author'' field can also be searched by first or last name. Search
+   using field ``firstname:'' and ``lastname:'' respectively. 
+
+
+   Disjunctions (``or'' queries) are available as well. Alternatives
+   should be separated with a double forward slash (``{\tt //}''), and
+   either ``{\tt ()}'' ``{\tt \{\}}'' or ``{\tt []}'' can be used for
+   grouping, as long as they match pairwise. Negation of disjunctions
+   also works as expected. For example, to find delicious meal accompagnements,
+   avoiding the usual suspects from France, query:
+
+
+\begin{verbatim}
+        (wine // champagne)  -(france // bordeaux)
+\end{verbatim}
+
+
+   It is possible use a exclamation mark (``{\tt !}'') instead of a dash. This is a
+   useful for queries which begin with a negation, otherwise they would be
+   mistaken for a unknown option. Note that some shells (bash) will insist on
+   having a space between the ``{\tt !}'' and the following word.
+
+
+\begin{verbatim}
+        ! author:Knuth   ! author:Dykstra
+\end{verbatim}
+
+
+   Shell-style regular expressions are supported, both as search word and as
+   field name. ``{\tt *}'' matches a sequence of characters, and ``{\tt ?}'' matches
+   a single character or nothing. They are most useful to abbreviate field names
+   and to search for the singular and plural of a word at once. To match titles
+   with either ``computer'' or ``computers'' (and some other unlikely things),
+   query:
+
+
+\begin{verbatim}
+        t*:computer?
+\end{verbatim}
+
+
+   Search terms are always case insensitive.
+
+
+\section*{Command line arguments}
+\linespread{1}
+\small
+\begin{verbatim}
+--morehelp      shows this document
+--all           work with all the already indexed BibTex files 
+--index         specify an index file to use instead of the defaults (~/.bibgrep.idx) 
+--interactive   present a prompt for interactive querying 
+--summaries     print one line summaries instead of the full BibTex entries, 
+                in a format compatible with emacs' ``M-x compile'' command 
+--sort          set the sorting field 
+--list          list the files indexed in the index file 
+--forget        remove the files given on the command line from the index 
+--no-save       do not save the modifications done to the index 
+--no-load       create an index anew, potentially clobbering the existing file) 
+--no-update     do not update the index, even if some BibTex files have changed 
+--verbose       comment the progress of the search (on stderr)
+--              use the rest of the command line as a query (rather
+                than at its usual place) 
+ 
+--no-index      short for `--no-load --no-save' 
+-i              short for --interactive 
+-sm             short for --summaries 
+-st             short for --sort 
+-l              short for --list 
+-r              short for --forget 
+-v              short for --verbose 
+ 
+-help           display the list of options 
+--help          display the list of options
+
+\end{verbatim}
+\normalsize
+\linespread{1.2}
+
+\section*{Using bibgrep interactively}
+
+The {\tt --interactive} option makes bibgrep present a prompt for
+interactive querying. This allow to make multiple search through 
+a large index without having to reload it from disk each time. The
+commands available in interactive mode are :
+
+\small
+\linespread{1}
+\begin{verbatim}
+find <query>       searches for BibTex entries.
+add <file> ...     add BibTex file(s) to list of files to search
+remove <file> ...  remove BibTex file(s) from files to search
+targets            list the file targeted for querying
+
+index <file> ...   add file(s) to the index
+forget <file> ...  remove file(s) from the index
+list               list the indexed files
+savenow            save the index to disk now
+
+help               the this list of commands
+morehelp           shows this document
+
+exit               leave bibgrep
+quit               leave bibgrep
+\end{verbatim}
+\linespread{1.2}
+
+
+The following commands changes options :
+
+\linespread{1}
+\begin{verbatim}
+  sort [ off | <field name> ]   sets the sort key
+  summaries [ on | off ]        toggle one-line summaries
+  update [ on | off ]           turns off automatic synchronization of the index
+  save [ on | off ]             disable saving the index when quitting
+  verbose [ on | off ]          become chatty about the search process (on stderr)
+\end{verbatim}
+\linespread{1.2}
+Typing the name of an option without the argument shows its
+current status
+
+\section*{Copyright}
+
+\scriptsize
+{\tt
+Copyright (C) 2003 Guillaume Marceau <gmarceau at cs dot brown dot edu>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+}
+\normalsize
+
+\end{document}
+
+
